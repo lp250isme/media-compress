@@ -2,10 +2,11 @@
 
 [English](#english) | [繁體中文](#繁體中文)
 
-Browser-side compression for images (WebP) and videos (720p H.264 via
+Browser-side compression for images (WebP) and videos (480p H.264 via
 WebCodecs) before upload — small enough to be crisp on a phone, tiny enough to
 save storage and load instantly. Always falls back to the original file when
-compression isn't possible, so it never blocks an upload.
+compression isn't possible, so it never blocks an upload, and tells you why via
+`onInfo`.
 
 ---
 
@@ -14,10 +15,12 @@ compression isn't possible, so it never blocks an upload.
 ### Why
 
 - **Images** → high-quality WebP (longest edge ≤ 1600, q0.85). GIF passes through.
-- **Videos** → 720p H.264 MP4 (~2.5 Mbps + AAC) using **WebCodecs** — no 30 MB
-  ffmpeg.wasm, no COOP/COEP cross-origin isolation needed.
+- **Videos** → 480p H.264 MP4 (~1.4 Mbps + AAC) using **WebCodecs** — no 30 MB
+  ffmpeg.wasm, no COOP/COEP cross-origin isolation needed. (480p is plenty for a
+  phone-sized player; bump `height`/`bitrate` for sharper.)
 - **Graceful fallback**: no WebCodecs (old iOS/Firefox), can't encode, or the
-  result isn't smaller → returns the original file untouched.
+  result isn't smaller → returns the original file untouched. `onInfo` reports
+  whether it compressed and, if not, why.
 
 ### Install
 
@@ -42,6 +45,7 @@ import { compressMedia } from "media-compress";
 // auto-detects image vs video; returns a File (compressed or original)
 const out = await compressMedia(file, {
   onProgress: (p) => console.log(Math.round(p * 100) + "%"), // video only, 0–1
+  onInfo: (i) => console.log(i.compressed ? `${i.fromBytes}→${i.toBytes}` : i.reason),
 });
 // then upload `out`
 ```
@@ -54,12 +58,16 @@ const out = await compressMedia(file, {
 {
   maxDim?: number;       // image longest edge, default 1600
   quality?: number;      // image WebP quality 0–1, default 0.85
-  height?: number;       // video max height, default 720
-  bitrate?: number;      // video bits/sec, default 2_500_000
+  height?: number;       // video max height, default 480
+  bitrate?: number;      // video bits/sec, default 1_400_000
   audioBitrate?: number; // video audio bits/sec, default 128_000
-  onProgress?: (p: number) => void; // video, 0–1
+  onProgress?: (p: number) => void; // video transcode progress, 0–1
+  onInfo?: (i: { compressed: boolean; reason?: string; fromBytes?: number; toBytes?: number }) => void;
 }
 ```
+
+`onInfo.reason` (when not compressed): `no-webcodecs` · `cannot-encode` ·
+`not-smaller` · `error` · `not-video` / `not-image`.
 
 ### Notes
 
@@ -75,10 +83,11 @@ const out = await compressMedia(file, {
 ### 為什麼
 
 - **圖片** → 高品質 WebP(最長邊 ≤ 1600、q0.85)。GIF 原樣不動。
-- **影片** → 用 **WebCodecs** 轉 720p H.264 MP4(~2.5 Mbps + AAC)——不用 30 MB
-  的 ffmpeg.wasm,也不用 COOP/COEP 跨來源隔離。
+- **影片** → 用 **WebCodecs** 轉 480p H.264 MP4(~1.4 Mbps + AAC)——不用 30 MB
+  的 ffmpeg.wasm,也不用 COOP/COEP 跨來源隔離。(480p 對手機尺寸的播放器綽綽有餘;
+  想更銳利就調大 `height`/`bitrate`。)
 - **安全退路**:沒有 WebCodecs(舊 iOS/Firefox)、無法編碼、或壓完反而更大 →
-  一律回原檔,絕不擋上傳。
+  一律回原檔,絕不擋上傳;`onInfo` 會回報壓了沒、沒壓的話為什麼。
 
 ### 安裝
 
@@ -103,6 +112,7 @@ import { compressMedia } from "media-compress";
 // 自動判斷圖片/影片;回傳 File(壓好的或原檔)
 const out = await compressMedia(file, {
   onProgress: (p) => console.log(Math.round(p * 100) + "%"), // 僅影片,0–1
+  onInfo: (i) => console.log(i.compressed ? `${i.fromBytes}→${i.toBytes}` : i.reason),
 });
 // 接著上傳 out
 ```
@@ -115,12 +125,16 @@ const out = await compressMedia(file, {
 {
   maxDim?: number;       // 圖片最長邊,預設 1600
   quality?: number;      // 圖片 WebP 品質 0–1,預設 0.85
-  height?: number;       // 影片最大高度,預設 720
-  bitrate?: number;      // 影片位元率 bits/sec,預設 2_500_000
+  height?: number;       // 影片最大高度,預設 480
+  bitrate?: number;      // 影片位元率 bits/sec,預設 1_400_000
   audioBitrate?: number; // 影片音訊 bits/sec,預設 128_000
-  onProgress?: (p: number) => void; // 影片,0–1
+  onProgress?: (p: number) => void; // 影片轉檔進度,0–1
+  onInfo?: (i: { compressed: boolean; reason?: string; fromBytes?: number; toBytes?: number }) => void;
 }
 ```
+
+`onInfo.reason`(沒壓到時):`no-webcodecs`(瀏覽器不支援)· `cannot-encode`
+(裝置無法編碼 H.264)· `not-smaller`(原檔已夠小)· `error` · `not-video`/`not-image`。
 
 ### 注意
 
