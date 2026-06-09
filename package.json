@@ -1,0 +1,45 @@
+{
+  "name": "media-compress",
+  "version": "1.0.0",
+  "description": "Compress images (WebP) and videos (720p H.264 via WebCodecs) in the browser before upload. Falls back to the original on unsupported browsers.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --minify --format=esm --outfile=dist/index.js && cp src/index.d.ts dist/index.d.ts"
+  },
+  "keywords": [
+    "compress",
+    "image",
+    "video",
+    "webp",
+    "webcodecs",
+    "transcode",
+    "h264",
+    "upload"
+  ],
+  "author": "kv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lp250isme/media-compress.git"
+  },
+  "dependencies": {
+    "mediabunny": "^1.46.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2"
+  }
+}
