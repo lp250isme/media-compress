@@ -48,7 +48,8 @@ export async function compressVideo(file, opts = {}) {
     const conversion = await Conversion.init({
       input,
       output,
-      video: { height, fit: 'contain', codec: 'h264', bitrate }, // 只縮到最大高度、保比例;比目標小不放大時靠 size 檢查保底
+      video: { height, fit: 'contain', codec: 'avc', bitrate }, // 'avc' = H.264(mediabunny 的 VideoCodec 值;寫 'h264' 會被判非法 → isValid:false → 全部影片 fallback 不壓)
+
       audio: { codec: 'aac', bitrate: audioBitrate },
     });
     if (!conversion.isValid) return done(file, { compressed: false, reason: 'cannot-encode' }); // 例如該裝置無法編碼 H.264
