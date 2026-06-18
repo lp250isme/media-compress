@@ -1,4 +1,6 @@
-# media-compress — 上傳前壓縮圖片與影片
+<p align="center">
+  <img src="assets/icon-dark.png" alt="media-compress" width="120" height="120">
+</p># media-compress — 上傳前壓縮圖片與影片
 
 [English](#english) | [繁體中文](#繁體中文)
 
