@@ -18,7 +18,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "esbuild src/index.js --bundle --minify --format=esm --outfile=dist/index.js && cp src/index.d.ts dist/index.d.ts"
+    "build": "esbuild src/index.js --bundle --minify --format=esm --outfile=dist/index.js && cp src/index.d.ts dist/index.d.ts",
+    "test": "node --experimental-test-module-mocks --disable-warning=ExperimentalWarning --test test/compress.test.js test/video-conversion.test.js"
   },
   "keywords": [
     "compress",
